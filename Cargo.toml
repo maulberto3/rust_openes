@@ -7,6 +7,8 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.82"
+ndarray = "0.15.6"
+ndarray-rand = "0.14.0"
 rand = "0.8.5"
 rayon = "1.10.0"
 statrs = "0.16.0"

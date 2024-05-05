@@ -40,6 +40,8 @@ enum EvoState {
 
 #[derive(Debug, Clone)]
 pub struct OpenESState {
+    //  TODO: given the theta gradient update,
+    // better to use ndarrays here...
     pub mean: Vec<f64>,
     pub sigma: Vec<f64>,
     // optimizer state...
@@ -51,6 +53,7 @@ impl OpenESState {
         match (algo, params) {
             (EvoAlgo::OpenES(_, num_dims), EvoParams::OpenES(params)) => {
                 let distr = Uniform::new(params.init_min, params.init_max).unwrap();
+                // and here
                 let mean: Vec<f64> = (0..*num_dims)
                     .into_par_iter()
                     .map(|_| {
@@ -58,7 +61,7 @@ impl OpenESState {
                         distr.sample(&mut rng)
                     })
                     .collect();
-                let sigma = vec![1.0 * params.sigma_init; *num_dims];
+                let sigma = vec![params.sigma_init; *num_dims];
                 let best_member = mean.clone();
                 OpenESState {
                     mean,
@@ -89,8 +92,9 @@ impl EvoAlgo {
     fn ask(&self, state: EvoState) -> (Vec<Vec<f64>>, EvoState) {
         match (self, state) {
             (EvoAlgo::OpenES(popsize, _), EvoState::OpenES(state)) => {
+                // and here
                 let pop: Vec<Vec<f64>> = (0..*popsize)
-                    .into_par_iter() // Convert the iterator into a parallel iterator
+                    .into_par_iter()
                     .map(|_indiv| {
                         let mut rng = rand::thread_rng();
                         state
@@ -102,10 +106,24 @@ impl EvoAlgo {
                                 distr.sample(&mut rng)
                             })
                             .collect()
-                    }) // Use map to generate population in parallel
-                    .collect(); // Collect the results into a vector
+                    })
+                    .collect();
 
                 (pop, EvoState::OpenES(state))
+            }
+            _ => unimplemented!(),
+        }
+    }
+
+    fn tell(&self, state: EvoState, pop: &Vec<Vec<f64>>, fitness: &Vec<f64>) -> EvoState {
+        match (self, state) {
+            (EvoAlgo::OpenES(popsize, _), EvoState::OpenES(state)) => {
+                // and defintely here
+                let noise = pop
+                    .par_iter()
+                    .map(|candidate| candidate.par_iter().map(|x| {}));
+
+                EvoState::OpenES(state)
             }
             _ => unimplemented!(),
         }
@@ -115,34 +133,50 @@ impl EvoAlgo {
 pub fn work() -> Result<()> {
     let popsize = 5;
     let num_dims = 5;
-    let openes = EvoAlgo::OpenES(popsize, num_dims);
-    // dbg!(&openes);
+    let open_es = EvoAlgo::OpenES(popsize, num_dims);
+    // dbg!(&open_es);
 
-    let params = openes.default_params();
+    let params = open_es.default_params();
     // dbg!(&params);
-    if let EvoParams::OpenES(params) = &params {
-        dbg!(&params.init_min);
-        // dbg!(&params.init_max);
-    }
+    // if let EvoParams::OpenES(params) = &params {
+    //     dbg!(&params.init_min);
+    // dbg!(&params.init_max);
+    // }
 
-    let state = openes.init_algorithm(&params);
+    let state = open_es.init_algorithm(&params);
     // dbg!(&state);
-    if let EvoState::OpenES(state) = &state {
-        dbg!(&state.mean);
-        // dbg!(&state.sigma);
-        // dbg!(&state.best_member);
+    // if let EvoState::OpenES(state) = &state {
+    //     dbg!(&state.mean);
+    // dbg!(&state.sigma);
+    // dbg!(&state.best_member);
+    // }
+
+    let (pop, state): (Vec<Vec<f64>>, EvoState) = open_es.ask(state);
+    dbg!(&pop);
+    dbg!(&state);
+
+    fn fitness(pop: &Vec<Vec<f64>>) -> Vec<f64> {
+        pop.par_iter()
+            .map(|candidate| candidate.par_iter().map(|x| x * x).sum::<f64>())
+            .collect()
     }
 
-    let num_iters = 7;
-    let x: (Vec<Vec<f64>>, EvoState) = openes.ask(state);
+    let fit = fitness(&pop);
+    dbg!(&fit);
+
+    // let state = open_es.tell(x, fit, state, params);
+
+    // let num_iters = 7;
     // for _i in 0..num_iters {
-    //     x = openes.ask(state);
+    //     x = open_es.ask(state);
     //     break;
     // }
-    dbg!(&x);
 
     Ok(())
 }
+
+
+
 
 // #[cfg(test)]
 // mod tests {
