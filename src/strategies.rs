@@ -1,8 +1,10 @@
-
 use ndarray::Array2;
 use ndarray_rand::{rand_distr::StandardNormal, RandomExt};
 
-use crate::{params::{OpenESParams, Params}, states::{OpenESState, State}};
+use crate::{
+    params::{OpenESParams, Params},
+    states::{OpenESState, State},
+};
 
 #[derive(Debug)]
 pub enum Algo {
@@ -104,4 +106,3 @@ impl Algo {
     //     }
     // }
 }
-

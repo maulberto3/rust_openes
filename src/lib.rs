@@ -11,7 +11,6 @@ mod states;
 mod strategies;
 use strategies::Algo;
 
-
 pub fn work() -> Result<()> {
     let popsize = 5;
     let num_dims = 4;

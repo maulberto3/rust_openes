@@ -1,6 +1,3 @@
-
-
-
 #[derive(Debug)]
 pub enum Params {
     OpenES(OpenESParams),

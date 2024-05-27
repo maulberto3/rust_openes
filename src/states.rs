@@ -4,9 +4,6 @@ use rand::distributions::Uniform;
 
 use crate::params::Params;
 
-
-
-
 #[derive(Debug)]
 pub enum State {
     OpenES(OpenESState),
