@@ -21,7 +21,7 @@ test:
 	cargo test --tests
 
 prep:
-	clear && make check fmt lint
+	clear && make fmt lint
 
 run:
 	clear && make build && cargo run
