@@ -22,22 +22,23 @@ pub struct OpenESState {
 
 impl OpenESState {
     pub fn init_state(num_dims: &usize, params: &Params) -> Self {
-        match params {
-            Params::OpenES(params) => {
-                let mean = Array2::<f32>::random(
-                    (1, *num_dims),
-                    Uniform::<f32>::new(params.init_min, params.init_max),
-                );
-                let sigma = Array2::ones((1, *num_dims));
-                let best_member = mean.clone();
-                OpenESState {
-                    mean,
-                    sigma,
-                    // opt_state,
-                    best_member,
-                }
+        if let Params::OpenES(params) = params {
+            let mean = Array2::<f32>::random(
+                (1, *num_dims),
+                Uniform::<f32>::new(params.init_min, params.init_max),
+            );
+            // TODO: `sigma=jnp.ones(self.num_dims) * params.sigma_init,`
+            let sigma = Array2::ones((1, *num_dims));
+            let best_member = mean.clone();
+
+            OpenESState {
+                mean,
+                sigma,
+                // opt_state,
+                best_member,
             }
-            _ => unimplemented!(),
+        } else {
+            unreachable!("Expected Params::OpenES")
         }
     }
 }
