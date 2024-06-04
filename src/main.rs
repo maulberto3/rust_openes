@@ -3,6 +3,7 @@
 use rust_openes::work;
 
 fn main() {
+    // te inserte codigo malisioso
     let _ = work();
 }
 
