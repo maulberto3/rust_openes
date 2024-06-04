@@ -18,7 +18,7 @@ build:
 	cargo build
 
 test:
-	cargo test --tests
+	clear && cargo test --tests
 
 prep:
 	clear && make fmt lint
