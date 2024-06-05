@@ -9,7 +9,7 @@ on:
       - ´*´
 
 jobs:
-  build:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -21,7 +21,7 @@ jobs:
           toolchain: stable
       # Install dependencies task
       - name: Install dependencies
-        run: cargo check 
+        run: cargo build 
       # Run your rust test 
       - name: Set up terminal
         run: echo "TERM=xterm" >> $GITHUB_ENV
