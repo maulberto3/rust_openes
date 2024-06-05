@@ -1,0 +1,32 @@
+name: Rust Project Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - ´*´
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      # minimal conf to run rust in ubuntu
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+      # Install dependencies task
+      - name: Install dependencies
+        run: cargo check 
+      # Run your rust test 
+      - name: Set up terminal
+        run: echo "TERM=xterm" >> $GITHUB_ENV
+      - name: Run tests
+        run: make test
+      # Add more rust commands as needed 
+
+      # Run your test functions files ...
