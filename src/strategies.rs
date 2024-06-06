@@ -53,7 +53,7 @@ impl Algo {
         fitness: Array2<f32>,
         state: State,
         params: &Params,
-    ) -> (Array2<f32>, State) {
+    ) -> State {
         match (self, state, params) {
             (Algo::OpenES(popsize, _), State::OpenES(state), Params::OpenES(params)) => {
                 // Reconstruct z
@@ -64,37 +64,32 @@ impl Algo {
                 // and then scaling back by state.sigma
                 let grads: Array2<f32> =
                     1.0 / (*popsize as f32 * &state.sigma) * noise.t().dot(&fitness).t();
-                let m: Array2<f32> = (1.0 - params.beta_1) * &grads + params.beta_1 * &state.m;
-                let v: Array2<f32> =
-                    (1.0 - params.beta_2) * (&grads.map(|x| x.powi(2))) + params.beta_2 * &state.v;
-                let mhat: Array2<f32> = &m / (1.0 - params.beta_1.powi(&state.gen_counter + 1));
-                let vhat: Array2<f32> = &v / (1.0 - params.beta_2.powi(&state.gen_counter + 1));
-                let mean_new: Array2<f32> = &state.mean
-                    - params.learning_rate * &mhat / (vhat.map(|x| x.powf(0.5)) + params.eps);
-                (
-                    mean_new,
-                    State::OpenES(OpenESState {
-                        m,
-                        v,
-                        gen_counter: &state.gen_counter + 1,
-                        ..state
-                    }),
-                )
-
-                // TODO: continue with update of optim
-
-                // def update(self, state: OptState, params: OptParams) -> OptState:
-                // """Exponentially decay the learning rate if desired."""
-                // lrate = exp_decay(state.lrate, params.lrate_decay, params.lrate_limit)
-                // return state.replace(lrate=lrate)
-
-                // def exp_decay(
-                //     param: chex.Array, param_decay: chex.Array, param_limit: chex.Array
-                // ) -> chex.Array:
-                //     """Exponentially decay parameter & clip by minimal value."""
-                //     param = param * param_decay
-                //     param = jnp.maximum(param, param_limit)
-                //     return param
+                let grads_ewa: Array2<f32> =
+                    params.beta_1 * &state.grads_ewa + (1.0 - params.beta_1) * &grads;
+                let grads_sq_ewa: Array2<f32> =
+                    params.beta_2 * &state.grads_sq_ewa + (1.0 - params.beta_2) * (&grads * &grads);
+                // Initially, the ewas might be small, even more so given their initialization,
+                // i.e.
+                let grads_ewa_adj: Array2<f32> =
+                    &grads_ewa / (1.0 - params.beta_1.powi(&state.gen_counter + 1));
+                let grads_sq_ewa_adj: Array2<f32> =
+                    &grads_sq_ewa / (1.0 - params.beta_2.powi(&state.gen_counter + 1));
+                let mean: Array2<f32> = &state.mean
+                    - params.learning_rate * &grads_ewa_adj
+                        / (&grads_sq_ewa_adj * &grads_sq_ewa_adj)
+                    + params.eps;
+                // TODO:
+                // Implement decay on learning_rate
+                // Enhance decay on sigma
+                let sigma = &state.sigma * 0.99; // max to not converge at zero...
+                State::OpenES(OpenESState {
+                    mean,
+                    sigma,
+                    grads_ewa,
+                    grads_sq_ewa,
+                    gen_counter: &state.gen_counter + 1,
+                    ..state
+                })
             }
             _ => unimplemented!(),
         }
