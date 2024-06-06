@@ -29,9 +29,9 @@ impl Algo {
         }
     }
 
-    pub fn ask(&self, state: &State) -> Array2<f32> {
-        match (self, state) {
-            (Algo::OpenES(popsize, num_dims), State::OpenES(state)) => {
+    pub fn ask(&self, state: &State, params: &Params) -> Array2<f32> {
+        match (self, state, params) {
+            (Algo::OpenES(popsize, num_dims), State::OpenES(state), Params::OpenES(params)) => {
                 let mut pop: Array2<f32> = Array2::random((*popsize, *num_dims), StandardNormal);
                 // Given the shapes and following operation,
                 // each row of the population is an independent draw
@@ -41,6 +41,7 @@ impl Algo {
                 // a normal distribution with mean 'state.mean[j]'
                 // and standard deviation 'state.sigma[j]'.
                 pop = pop * &state.sigma + &state.mean;
+                pop = pop.map(|x| x.clamp(params.clip_min, params.clip_max));
                 pop
             }
             _ => unimplemented!(),
