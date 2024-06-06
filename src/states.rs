@@ -18,8 +18,8 @@ pub struct OpenESState {
     // pub best_fitness: f32,  // jnp.finfo(jnp.float32).max,
     // pub gen_counter: usize
     // optimizer state...
-    pub m: Array2<f32>,
-    pub v: Array2<f32>,
+    pub grads_ewa: Array2<f32>,
+    pub grads_sq_ewa: Array2<f32>,
     pub gen_counter: i32,
 }
 
@@ -34,16 +34,16 @@ impl OpenESState {
             let sigma: Array2<f32> = Array2::ones((1, *num_dims));
             let best_member: Array2<f32> = mean.clone();
             // optim init state
-            let m: Array2<f32> = Array2::zeros((1, *num_dims));
-            let v: Array2<f32> = Array2::zeros((1, *num_dims));
+            let grads_ewa: Array2<f32> = Array2::zeros((1, *num_dims));
+            let grads_sq_ewa: Array2<f32> = Array2::zeros((1, *num_dims));
             let gen_counter = 0;
 
             OpenESState {
                 mean,
                 sigma,
                 best_member,
-                m,
-                v,
+                grads_ewa,
+                grads_sq_ewa,
                 gen_counter,
             }
         } else {
