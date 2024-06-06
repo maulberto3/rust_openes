@@ -63,7 +63,9 @@ pub fn work() -> Result<()> {
     let fitness: Array2<f32> = square_and_sum(&pop);
     // println!("{:+.4}", &fitness);
 
-    let _ = open_es.tell(pop, fitness, state, &params);
+    println!("{:+.4?}", &state);
+    let state = open_es.tell(pop, fitness, state, &params);
+    println!("{:+.4?}", &state);
     // dbg!(&state);
 
     // let num_iters = 7;
